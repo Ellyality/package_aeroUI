@@ -23,21 +23,12 @@ SubShader {
 
 sampler2D _GrabTexture;
 
-float4 PS_BlurX(
-	float4 p : SV_POSITION,
-	float2 uv1 : TEXCOORD0,
-	float4 uv2 : TEXCOORD1
-) : SV_TARGET {
-	return blur_x(uv1, uv2, _GrabTexture);
+float4 PS_BlurX(PSQuad p) : SV_TARGET {
+	return blur_x(p.uv1, p.uv2, _GrabTexture);
 }
 
-float4 PS_BlurY(
-	float4 p : SV_POSITION,
-	float2 uv1 : TEXCOORD0,
-	float4 uv2 : TEXCOORD1,
-	float4 img_color : COLOR
-) : SV_TARGET {
-	return blur_y(uv1, uv2, img_color, _GrabTexture);
+float4 PS_BlurY(PSQuadI p) : SV_TARGET {
+	return blur_y(p.uv1, p.uv2, p.img_color, _GrabTexture);
 }
 
 	ENDCG
@@ -67,5 +58,5 @@ float4 PS_BlurY(
 		#pragma fragment PS_BlurY
 		ENDCG
 	}
-}
+}Fallback "Funique/URP/UI Blur Effet"
 }
