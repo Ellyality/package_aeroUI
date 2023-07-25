@@ -46,67 +46,32 @@ float4 linear_blur(sampler2D sp, float4 uv, float2 dir) {
 
 // Vertex shaders.
 
-struct VSQuad
-{
-    float3 positionOS   : POSITION;
-    float4 color        : COLOR;
-    float2 uv           : TEXCOORD0;
-    UNITY_VERTEX_INPUT_INSTANCE_ID
-};
-
-struct VSQuadColor
-{
-    float3 positionOS   : POSITION;
-    float4 color        : COLOR;
-    float2 uv           : TEXCOORD0;
-	float4 img_color : COLOR;
-    UNITY_VERTEX_INPUT_INSTANCE_ID
-};
-
-struct PSQuad{
-	float4 p : SV_POSITION;
-	float2 uv1 : TEXCOORD0;
-	float4 uv2 : TEXCOORD1;
-	UNITY_VERTEX_OUTPUT_STEREO
-};
-
-struct PSQuadI{
-	float4 p : SV_POSITION;
-	float2 uv1 : TEXCOORD0;
-	float4 uv2 : TEXCOORD1;
-	float4 img_color : COLOR;
-	UNITY_VERTEX_OUTPUT_STEREO
-};
-
-PSQuad VS_Quad(VSQuad a) {
-	PSQuad o;
-	UNITY_SETUP_INSTANCE_ID(o);
-    UNITY_INITIALIZE_VERTEX_OUTPUT_STEREO(o);
-	o.p = UnityObjectToClipPos(a.positionOS);
-	o.uv1 = a.uv;
-	return o;
+void VS_Quad(
+	float4 v : POSITION,
+	out float4 p : SV_POSITION,
+	inout float2 uv : TEXCOORD
+) {
+	p = UnityObjectToClipPos(v);
 }
 
-PSQuad VS_QuadProj(VSQuad a) {
-    PSQuad o = VS_Quad(a);
-	UNITY_SETUP_INSTANCE_ID(o);
-    UNITY_INITIALIZE_VERTEX_OUTPUT_STEREO(o);
-	//o.uv2 = ComputeGrabScreenPos(a.positionOS);
-	return o;
+void VS_QuadProj(
+    float4 v : POSITION,
+    out float4 p : SV_POSITION,
+    inout float2 uv1 : TEXCOORD0,
+	out float4 uv2 : TEXCOORD1
+) {
+    VS_Quad(v, p, uv1);
+	uv2 = ComputeGrabScreenPos(p);
 }
 
-PSQuadI VS_QuadProjColor(VSQuadColor a) {
-	VSQuad v;
-	v.positionOS = a.positionOS;
-    v.color = a.color;
-    v.uv = a.uv;
-	PSQuad ob = VS_QuadProj(v);
-	PSQuadI o;
-	o.p = ob.p;
-	o.uv2 = ob.uv2;
-	o.uv1 = a.uv;
-	o.img_color = a.img_color;
-	return o;
+void VS_QuadProjColor(
+	float4 v : POSITION,
+	out float4 p : SV_POSITION,
+	inout float2 uv1 : TEXCOORD0,
+	out float4 uv2 : texcoord2,
+	inout float4 img_color : COLOR
+) {
+	VS_QuadProj(v, p, uv1, uv2);
 }
 
 // Pixel shader functions (for changing the grab pass texture).

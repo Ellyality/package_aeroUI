@@ -22,8 +22,19 @@ SubShader {
 #include "UIBlur.cginc"
 sampler2D _GrabbedTexture;
 
-float4 PS_BlurA(PSQuadI p) : SV_TARGET {
-	return blur_y(p.uv1, p.uv2, blur_x(p.uv1, p.uv2, _MainTex), _GrabbedTexture);
+float4 PS_BlurA(
+	float4 p : SV_POSITION,
+	float2 uv1 : TEXCOORD0,
+	float4 uv2 : TEXCOORD1,
+	float4 img_color : COLOR
+) : SV_TARGET {
+
+#if defined(UNIVERSAL_PIPELINE_CORE_INCLUDED)
+	return tex2D(_MainTex, uv1);
+#else
+	return blur_y(uv1, uv2, blur_x(uv1, uv2, _MainTex), _GrabbedTexture);
+#endif
+	
 }
 
 	ENDCG
