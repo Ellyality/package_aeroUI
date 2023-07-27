@@ -6,6 +6,10 @@
 #include "UnityCG.cginc"
 #include "GaussianBlur.cginc"
 
+#ifndef ITER
+	#define ITER 8
+#endif
+
 // Pixel size.
 static const float2 ps = _ScreenParams.zw - 1.0;
 
@@ -14,7 +18,8 @@ static const float2 ps = _ScreenParams.zw - 1.0;
 uniform sampler2D _MainTex;
 uniform float4 _MainTex_TexelSize;
 #endif
-float _Opacity, _Size;
+float _Opacity;
+int _Size;
 
 // Functions.
 
@@ -55,15 +60,16 @@ float4 linear_blur(sampler2D sp, float4 uv, float2 dir) {
 // uv - Texture coordinates.
 float4 gaussian_blur(sampler2D sp, float4 uv, float4 tuv) {
 	int samples = floor(SIZE);
-	int leng = samples - (-samples / 2) + 1;
+	int iter = ITER;
+	int leng = 0;
 	float4 color = 0.0;
 	float sum = 0;
 	float4 uvOffset;
 	float weight;
 
-	for (int x = -samples / 2; x <= samples; ++x) {
-		for (int y = -samples / 2; y <= samples; ++y) {
-			float2 dir = ps * (float2(x, y) + float2(frac(SIZE), frac(SIZE)));
+	for (float x = -samples / 2.0; x <= samples; x+=(1.0 / iter)) {
+		for (float y = -samples / 2.0; y <= samples; y+=(1.0 / iter)) {
+			float2 dir = ps * (float2(x, y));
 			uvOffset = UNITY_PROJ_COORD(float4(
 				uv.x - dir.x * samples * 0.5,
 				uv.y - dir.y * samples * 0.5,
@@ -82,10 +88,11 @@ float4 gaussian_blur(sampler2D sp, float4 uv, float4 tuv) {
 			//weight = gauss(x, y, 0.8);
 			//color += tex2Dproj(sp, uvOffset) * weight;
 			//sum += weight;
+			leng+=1;
 		}
 	}
 	//color *= (1.0 / sum);
-	return color / (leng * leng);
+	return color / leng;
 }
 
 // Vertex shaders.
