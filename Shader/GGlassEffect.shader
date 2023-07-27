@@ -1,9 +1,9 @@
-Shader "Funique/Build-in/UI Blur Effet" {
+Shader "Funique/Build-in/UI Gaussian Blur Effet" {
 Properties {
 	[HideInInspector]
 	_MainTex("", 2D) = "" {}
 	_Opacity("Opacity", Range(0.0, 1.0)) = 0.5
-	_Size("Size", Range(1.0, 16.0)) = 4.0
+	[KeywordEnum(N, LITTLE, MEDIUM, BIG)] Size ("Size", Float) = 0
 }
 SubShader {
 	Tags {
@@ -18,20 +18,21 @@ SubShader {
 	Blend SrcAlpha OneMinusSrcAlpha
 
 CGINCLUDE
-	#define SIZE _Size
+	#pragma multi_compile NONE LITTLE_KERNEL MEDIUM_KERNEL BIG_KERNEL
+	#define SIZE KERNEL_SIZE
 	#include "UIBlur.cginc"
 	sampler2D _GrabTexture;
 	float4 _GrabTexture_TexelSize;
 
 	float4 PS_BlurX(PS_QuadProj_Appdata i) : SV_TARGET {
 		UNITY_SETUP_STEREO_EYE_INDEX_POST_VERTEX(i);
-		return blur_x(i.uv1, i.uv2, _GrabTexture);
+		return gblur_x(i.uv1, i.uv2, _GrabTexture, _GrabTexture_TexelSize);
 	}
 
 	float4 PS_BlurY(PS_QuadProjColor_Appdata i) : SV_TARGET {
 		UNITY_SETUP_STEREO_EYE_INDEX_POST_VERTEX(i);
 		//return tex2D(_GrabTexture, i.uv2);
-		return blur_y(i.uv1, i.uv2, i.img_color, _GrabTexture);
+		return gblur_y(i.uv1, i.uv2, i.img_color, _GrabTexture, _GrabTexture_TexelSize);
 	}
 	ENDCG
 

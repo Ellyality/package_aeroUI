@@ -18,11 +18,10 @@ SubShader {
 	Blend SrcAlpha OneMinusSrcAlpha
 
 	CGINCLUDE
-
-UNITY_DECLARE_SCREENSPACE_TEXTURE(_MainTex);
-#define MAINTEX
+	#define SIZE KERNEL_SIZE
 #include "UIBlur.cginc"
 sampler2D _GrabbedTexture;
+float4 _GrabbedTexture_TexelSize;
 
 float4 PS_BlurA(
 	float4 p : SV_POSITION,

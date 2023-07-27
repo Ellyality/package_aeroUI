@@ -1,14 +1,18 @@
 #ifndef UI_BLUR_CGINC
 #define UI_BLUR_CGINC
 
+#pragma target 3.0
+
 #include "UnityCG.cginc"
+#include "GaussianBlur.cginc"
 
 // Pixel size.
 static const float2 ps = _ScreenParams.zw - 1.0;
 
 // Parameters.
 #if !defined(MAINTEX)
-sampler2D _MainTex;
+uniform sampler2D _MainTex;
+uniform float4 _MainTex_TexelSize;
 #endif
 float _Opacity, _Size;
 
@@ -32,7 +36,6 @@ float4 linear_blur(sampler2D sp, float4 uv, float2 dir) {
 		uv.w
 	));
 
-	[unroll]
 	for (int i = 0; i < samples; ++i) {
 		uv = UNITY_PROJ_COORD(float4(
 			uv.x + dir.x,
@@ -44,6 +47,45 @@ float4 linear_blur(sampler2D sp, float4 uv, float2 dir) {
 	}
 
 	return color / samples;
+}
+
+// Creates a linear blur from a projected texture.
+// The blur is made centered, so the direction is always absolute.
+// sp - Texture sampler.
+// uv - Texture coordinates.
+float4 gaussian_blur(sampler2D sp, float4 uv, float4 tuv) {
+	int samples = floor(SIZE);
+	int leng = samples - (-samples / 2) + 1;
+	float4 color = 0.0;
+	float sum = 0;
+	float4 uvOffset;
+	float weight;
+
+	for (int x = -samples / 2; x <= samples; ++x) {
+		for (int y = -samples / 2; y <= samples; ++y) {
+			float2 dir = ps * (float2(x, y) + float2(frac(SIZE), frac(SIZE)));
+			uvOffset = UNITY_PROJ_COORD(float4(
+				uv.x - dir.x * samples * 0.5,
+				uv.y - dir.y * samples * 0.5,
+				uv.z,
+				uv.w
+			));
+			uvOffset = UNITY_PROJ_COORD(float4(
+				uvOffset.x + dir.x,
+				uvOffset.y + dir.y,
+				uvOffset.z,
+				uvOffset.w
+			));
+			color += tex2Dproj(sp, uvOffset);
+			//uvOffset = UNITY_PROJ_COORD(uv);
+			//uvOffset.xy += (float2(x, y) * tuv.xy);
+			//weight = gauss(x, y, 0.8);
+			//color += tex2Dproj(sp, uvOffset) * weight;
+			//sum += weight;
+		}
+	}
+	//color *= (1.0 / sum);
+	return color / (leng * leng);
 }
 
 // Vertex shaders.
@@ -134,11 +176,28 @@ float4 blur_x(float2 img_uv, float4 grab_uv, sampler2D grab_tex) {
 
     return blur * color.a;
 }
-
 float4 blur_y(float2 img_uv, float4 grab_uv, float4 img_color, sampler2D grab_tex) {
 	float2 dir = float2(0.0, ps.y * _Size);
     
 	float4 blur = linear_blur(grab_tex, grab_uv, dir);
+	blur.a = 1.0;
+
+	float4 color = tex2D(_MainTex, img_uv) * img_color;
+	color = lerp(blur * color.a, color, _Opacity);
+
+	return color;
+}
+
+float4 gblur_x(float2 img_uv, float4 grab_uv, sampler2D grab_tex, float4 grab_texel) {
+	float4 blur = gaussian_blur(grab_tex, grab_uv, grab_texel);
+	blur.a = 1.0;
+
+	float4 color = tex2D(_MainTex, img_uv);
+
+    return blur * color.a;
+}
+float4 gblur_y(float2 img_uv, float4 grab_uv, float4 img_color, sampler2D grab_tex, float4 grab_texel) {
+	float4 blur = gaussian_blur(grab_tex, grab_uv, grab_texel);
 	blur.a = 1.0;
 
 	float4 color = tex2D(_MainTex, img_uv) * img_color;
