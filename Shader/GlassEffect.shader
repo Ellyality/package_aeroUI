@@ -17,27 +17,23 @@ SubShader {
 	ZWrite Off
 	Blend SrcAlpha OneMinusSrcAlpha
 
-	CGINCLUDE
+CGINCLUDE
+	#include "UIBlur.cginc"
+	sampler2D _GrabTexture;
 
-#include "UIBlur.cginc"
+	float4 PS_BlurX(PS_QuadProj_Appdata i) : SV_TARGET {
+		UNITY_SETUP_STEREO_EYE_INDEX_POST_VERTEX(i);
+		return blur_x(i.uv1, i.uv2, _GrabTexture);
+	}
 
-sampler2D _GrabTexture;
-
-float4 PS_BlurX(PSQuad p) : SV_TARGET {
-	return blur_x(p.uv1, p.uv2, _GrabTexture);
-}
-
-float4 PS_BlurY(PSQuadI p) : SV_TARGET {
-	return blur_y(p.uv1, p.uv2, p.img_color, _GrabTexture);
-}
-
+	float4 PS_BlurY(PS_QuadProjColor_Appdata i) : SV_TARGET {
+		UNITY_SETUP_STEREO_EYE_INDEX_POST_VERTEX(i);
+		//return tex2D(_GrabTexture, i.uv2);
+		return blur_y(i.uv1, i.uv2, i.img_color, _GrabTexture);
+	}
 	ENDCG
 
-	GrabPass {
-		Tags {
-			"LightMode" = "Always"
-		}
-	}
+	GrabPass {"_GrabTexture"}
 
 	Pass {
 		CGPROGRAM
@@ -46,11 +42,7 @@ float4 PS_BlurY(PSQuadI p) : SV_TARGET {
 		ENDCG
 	}
 
-	GrabPass {
-		Tags {
-			"LightMode" = "Always"
-		}
-	}
+	GrabPass {"_GrabTexture"}
 
 	Pass {
 		CGPROGRAM
@@ -58,5 +50,5 @@ float4 PS_BlurY(PSQuadI p) : SV_TARGET {
 		#pragma fragment PS_BlurY
 		ENDCG
 	}
-}Fallback "Funique/URP/UI Blur Effet"
+}
 }

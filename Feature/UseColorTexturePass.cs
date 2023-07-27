@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using UnityEngine;
 using UnityEngine.Rendering;
 using UnityEngine.Rendering.Universal;
 
@@ -14,6 +15,7 @@ namespace URPGrabPass.Runtime
         private readonly SortingCriteria _sortingCriteria;
 
         private FilteringSettings _filteringSettings;
+        private ScriptableRenderer _renderer;
 
         public UseColorTexturePass(GrabTiming timing, IEnumerable<string> shaderLightModes,
             SortingCriteria sortingCriteria)
@@ -32,13 +34,19 @@ namespace URPGrabPass.Runtime
             _sortingCriteria = sortingCriteria;
         }
 
+        public void BeforeEnqueue(ScriptableRenderer renderer)
+        {
+            _renderer = renderer;
+        }
+
         public override void Execute(ScriptableRenderContext context, ref RenderingData renderingData)
         {
             var cmd = CommandBufferPool.Get();
             using (new ProfilingScope(cmd, _profilingSampler))
             {
+                cmd.SetRenderTarget(_renderer.cameraColorTarget);
                 // Render objects with specified LightModes.
-                var drawingSettings =
+                DrawingSettings drawingSettings =
                     CreateDrawingSettings(_shaderTagIds, ref renderingData, _sortingCriteria);
                 context.DrawRenderers(renderingData.cullResults, ref drawingSettings, ref _filteringSettings);
                 

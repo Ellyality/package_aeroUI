@@ -7,7 +7,9 @@
 static const float2 ps = _ScreenParams.zw - 1.0;
 
 // Parameters.
+#if !defined(MAINTEX)
 sampler2D _MainTex;
+#endif
 float _Opacity, _Size;
 
 // Functions.
@@ -46,66 +48,77 @@ float4 linear_blur(sampler2D sp, float4 uv, float2 dir) {
 
 // Vertex shaders.
 
-struct VSQuad
+struct VS_Quad_Appdata
 {
-    float3 positionOS   : POSITION;
-    float4 color        : COLOR;
-    float2 uv           : TEXCOORD0;
-    UNITY_VERTEX_INPUT_INSTANCE_ID
+	float4 v : POSITION;
+	float2 uv : TEXCOORD;
+	UNITY_VERTEX_INPUT_INSTANCE_ID
 };
 
-struct VSQuadColor
+struct VS_QuadProj_Appdata
 {
-    float3 positionOS   : POSITION;
-    float4 color        : COLOR;
-    float2 uv           : TEXCOORD0;
+	float4 v : POSITION;
+	float2 uv : TEXCOORD;
+	UNITY_VERTEX_INPUT_INSTANCE_ID
+};
+
+struct VS_QuadProjColor_Appdata
+{
+	float4 v : POSITION;
+	float2 uv : TEXCOORD;
 	float4 img_color : COLOR;
-    UNITY_VERTEX_INPUT_INSTANCE_ID
+	UNITY_VERTEX_INPUT_INSTANCE_ID
 };
 
-struct PSQuad{
+struct PS_Quad_Appdata{
+	float4 p : SV_POSITION;
+    UNITY_VERTEX_OUTPUT_STEREO
+};
+
+struct PS_QuadProj_Appdata{
 	float4 p : SV_POSITION;
 	float2 uv1 : TEXCOORD0;
 	float4 uv2 : TEXCOORD1;
-	UNITY_VERTEX_OUTPUT_STEREO
+    UNITY_VERTEX_OUTPUT_STEREO
 };
 
-struct PSQuadI{
+struct PS_QuadProjColor_Appdata{
 	float4 p : SV_POSITION;
 	float2 uv1 : TEXCOORD0;
 	float4 uv2 : TEXCOORD1;
 	float4 img_color : COLOR;
-	UNITY_VERTEX_OUTPUT_STEREO
+    UNITY_VERTEX_OUTPUT_STEREO
 };
 
-PSQuad VS_Quad(VSQuad a) {
-	PSQuad o;
-	UNITY_SETUP_INSTANCE_ID(o);
+PS_Quad_Appdata VS_Quad(VS_Quad_Appdata v) {
+	PS_Quad_Appdata o;
+	UNITY_SETUP_INSTANCE_ID(v);
+    UNITY_INITIALIZE_OUTPUT(PS_Quad_Appdata, o);
     UNITY_INITIALIZE_VERTEX_OUTPUT_STEREO(o);
-	o.p = UnityObjectToClipPos(a.positionOS);
-	o.uv1 = a.uv;
+	o.p = UnityObjectToClipPos(v.v);
 	return o;
 }
 
-PSQuad VS_QuadProj(VSQuad a) {
-    PSQuad o = VS_Quad(a);
-	UNITY_SETUP_INSTANCE_ID(o);
+PS_QuadProj_Appdata VS_QuadProj(VS_QuadProj_Appdata v) {
+	PS_QuadProj_Appdata o;
+	UNITY_SETUP_INSTANCE_ID(v);
+    UNITY_INITIALIZE_OUTPUT(PS_QuadProj_Appdata, o);
     UNITY_INITIALIZE_VERTEX_OUTPUT_STEREO(o);
-	//o.uv2 = ComputeGrabScreenPos(a.positionOS);
+	o.p = UnityObjectToClipPos(v.v);
+	o.uv1 = v.uv;
+	o.uv2 = ComputeGrabScreenPos(o.p);
 	return o;
 }
 
-PSQuadI VS_QuadProjColor(VSQuadColor a) {
-	VSQuad v;
-	v.positionOS = a.positionOS;
-    v.color = a.color;
-    v.uv = a.uv;
-	PSQuad ob = VS_QuadProj(v);
-	PSQuadI o;
-	o.p = ob.p;
-	o.uv2 = ob.uv2;
-	o.uv1 = a.uv;
-	o.img_color = a.img_color;
+PS_QuadProjColor_Appdata VS_QuadProjColor(VS_QuadProjColor_Appdata v) {
+	PS_QuadProjColor_Appdata o;
+	UNITY_SETUP_INSTANCE_ID(v);
+    UNITY_INITIALIZE_OUTPUT(PS_QuadProjColor_Appdata, o);
+    UNITY_INITIALIZE_VERTEX_OUTPUT_STEREO(o);
+	o.p = UnityObjectToClipPos(v.v);
+	o.uv1 = v.uv;
+	o.uv2 = ComputeGrabScreenPos(o.p);
+	o.img_color = v.img_color;
 	return o;
 }
 

@@ -27,20 +27,45 @@ namespace URPGrabPass.Runtime
         [SerializeField] [Tooltip("How to sort objects during rendering.")]
         private SortingCriteria _sortingCriteria = SortingCriteria.CommonTransparent;
 
+        [SerializeField]
+        private Shader _shader;
+
+        private ColorBlitPass _grabColorBlit;
         private GrabColorTexturePass _grabColorTexturePass;
         private UseColorTexturePass _useColorTexturePass;
+        private Material _material;
 
         public override void Create()
         {
-            _grabColorTexturePass = new GrabColorTexturePass(_timing, _grabbedTextureName);
+            if (_shader == null)
+                _shader = Shader.Find("ColorBlit");
+            if (_shader != null)
+                _material = new Material(_shader);
+
+            _grabColorBlit = new ColorBlitPass(_timing, _material);
+            _grabColorTexturePass = new GrabColorTexturePass(_timing, _grabbedTextureName, _material);
             _useColorTexturePass = new UseColorTexturePass(_timing, _shaderLightModes, _sortingCriteria);
         }
 
         public override void AddRenderPasses(ScriptableRenderer renderer, ref RenderingData renderingData)
         {
             _grabColorTexturePass.BeforeEnqueue(renderer);
+            _useColorTexturePass.BeforeEnqueue(renderer);
+            _grabColorBlit.ConfigureInput(ScriptableRenderPassInput.Color);
+            _grabColorBlit.SetTarget(renderer.cameraColorTarget, 1.5f);
+            renderer.EnqueuePass(_grabColorBlit);
+            _grabColorTexturePass.SetTarget(_grabColorBlit.Recevier);
+            //_grabColorTexturePass.SetTarget(renderer.cameraColorTarget);
             renderer.EnqueuePass(_grabColorTexturePass);
             renderer.EnqueuePass(_useColorTexturePass);
         }
+
+        protected override void Dispose(bool disposing)
+        {
+            base.Dispose(disposing);
+            CoreUtils.Destroy(_material);
+        }
     }
+
+
 }

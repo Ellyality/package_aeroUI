@@ -9,19 +9,27 @@ namespace URPGrabPass.Runtime
     /// </summary>
     public class GrabColorTexturePass : ScriptableRenderPass
     {
-
+        private ProfilingSampler _ProfilingSampler = new ProfilingSampler("Grab Pass");
         private readonly RTHandle _grabbedTextureHandle;
         private readonly string _grabbedTextureName;
         private readonly int _grabbedTexturePropertyId;
 
+        private RenderTargetIdentifier m_CameraColorTarget;
         private ScriptableRenderer _renderer;
+        Material m_Material;
 
-        public GrabColorTexturePass(GrabTiming timing, string grabbedTextureName)
+        public GrabColorTexturePass(GrabTiming timing, string grabbedTextureName, Material material)
         {
+            m_Material = material;
             renderPassEvent = timing.ToRenderPassEvent();
             _grabbedTextureName = grabbedTextureName;
             _grabbedTextureHandle = RTHandles.Alloc(_grabbedTextureName, _grabbedTextureName);
             _grabbedTexturePropertyId = Shader.PropertyToID(_grabbedTextureName);
+        }
+
+        public void SetTarget(RenderTargetIdentifier target)
+        {
+            m_CameraColorTarget = target;
         }
 
         public void BeforeEnqueue(ScriptableRenderer renderer)
@@ -39,7 +47,12 @@ namespace URPGrabPass.Runtime
         {
             var cmd = CommandBufferPool.Get(nameof(GrabColorTexturePass));
             cmd.Clear();
-            Blit(cmd, _renderer.cameraColorTarget, _grabbedTextureHandle.nameID);
+            using (new ProfilingScope(cmd, _ProfilingSampler))
+            {
+                cmd.SetRenderTarget(m_CameraColorTarget);
+                cmd.DrawMesh(RenderingUtils.fullscreenMesh, Matrix4x4.identity, m_Material);
+                //Blit(cmd, m_CameraColorTarget, _grabbedTextureHandle.nameID);
+            }
             context.ExecuteCommandBuffer(cmd);
             CommandBufferPool.Release(cmd);
         }
