@@ -3,7 +3,8 @@ Properties {
 	[HideInInspector]
 	_MainTex("", 2D) = "" {}
 	_Opacity("Opacity", Range(0.0, 1.0)) = 0.5
-	_Size("Size", Range(1.0, 16.0)) = 4.0
+	_Size("Size", Range(1, 16)) = 4.0
+	_Iter("Iter", Range(1, 10)) = 4.0
 }
 SubShader {
 	Tags {
@@ -18,7 +19,9 @@ SubShader {
 	Blend SrcAlpha OneMinusSrcAlpha
 
 CGINCLUDE
+	int _Iter;
 	#define SIZE _Size
+	#define ITER _Iter
 	#include "UIBlur.cginc"
 	sampler2D _GrabTexture;
 	float4 _GrabTexture_TexelSize;
