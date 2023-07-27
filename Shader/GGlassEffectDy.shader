@@ -1,4 +1,4 @@
-Shader "Funique/Build-in/UI Blur Effet" {
+Shader "Funique/Build-in/UI Gaussian Blur Effet" {
 Properties {
 	[HideInInspector]
 	_MainTex("", 2D) = "" {}
@@ -25,13 +25,13 @@ CGINCLUDE
 
 	float4 PS_BlurX(PS_QuadProj_Appdata i) : SV_TARGET {
 		UNITY_SETUP_STEREO_EYE_INDEX_POST_VERTEX(i);
-		return blur_x(i.uv1, i.uv2, _GrabTexture);
+		return gblur_x(i.uv1, i.uv2, _GrabTexture, _GrabTexture_TexelSize);
 	}
 
 	float4 PS_BlurY(PS_QuadProjColor_Appdata i) : SV_TARGET {
 		UNITY_SETUP_STEREO_EYE_INDEX_POST_VERTEX(i);
 		//return tex2D(_GrabTexture, i.uv2);
-		return blur_y(i.uv1, i.uv2, i.img_color, _GrabTexture);
+		return gblur_y(i.uv1, i.uv2, i.img_color, _GrabTexture, _GrabTexture_TexelSize);
 	}
 	ENDCG
 
