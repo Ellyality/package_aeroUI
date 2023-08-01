@@ -7,7 +7,7 @@
 #elif LITTLE_KERNEL
 	#define KERNEL_SIZE 1
 #else
-	#define KERNEL_SIZE 9
+	#define KERNEL_SIZE 15
 #endif
 
 float gauss(float x, float sigma)
@@ -47,6 +47,27 @@ float4 GaussianBlur(pixel_info pinfo, float sigma, float2 dir)
 	return o;
 }
 
+float4 GaussianBlurOnePass(pixel_info pinfo, float sigma, float2 dir)
+{
+	float4 o = 0;
+	float sum = 0;
+	float2 uvOffset;
+	float weight;
+	
+	for (int x = -KERNEL_SIZE / 2; x <= KERNEL_SIZE / 2; ++x)
+		for (int y = -KERNEL_SIZE / 2; y <= KERNEL_SIZE / 2; ++y)
+		{
+			uvOffset = pinfo.uv;
+			uvOffset.x += x * pinfo.texelSize.x;
+			uvOffset.y += y * pinfo.texelSize.y;
+			weight = gauss(x, y, sigma);
+			o += tex2D(pinfo.tex, uvOffset) * weight;
+			sum += weight;
+		}
+	o *= (1.0f / sum);
+	return o;
+}
+
 float4 GaussianBlurLinearSampling(pixel_info pinfo, float sigma, float2 dir)
 {
 	float4 o = 0;
@@ -76,3 +97,5 @@ float4 KawaseBlur(pixel_info pinfo, int pixelOffset)
 	o += tex2D(pinfo.tex, pinfo.uv + (float2(pixelOffset + 0.5,-pixelOffset - 0.5) * pinfo.texelSize)) * 0.25;
 	return o;
 }
+
+

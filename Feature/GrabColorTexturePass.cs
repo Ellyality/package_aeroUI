@@ -49,9 +49,9 @@ namespace URPGrabPass.Runtime
             cmd.Clear();
             using (new ProfilingScope(cmd, _ProfilingSampler))
             {
-                cmd.SetRenderTarget(m_CameraColorTarget);
-                cmd.DrawMesh(RenderingUtils.fullscreenMesh, Matrix4x4.identity, m_Material);
-                //Blit(cmd, m_CameraColorTarget, _grabbedTextureHandle.nameID);
+                //cmd.SetRenderTarget(m_CameraColorTarget);
+                //cmd.DrawMesh(RenderingUtils.fullscreenMesh, Matrix4x4.identity, m_Material);
+                Blit(cmd, m_CameraColorTarget, _grabbedTextureHandle.nameID);
             }
             context.ExecuteCommandBuffer(cmd);
             CommandBufferPool.Release(cmd);

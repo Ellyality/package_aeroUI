@@ -51,11 +51,11 @@ namespace URPGrabPass.Runtime
         {
             _grabColorTexturePass.BeforeEnqueue(renderer);
             _useColorTexturePass.BeforeEnqueue(renderer);
-            _grabColorBlit.ConfigureInput(ScriptableRenderPassInput.Color);
-            _grabColorBlit.SetTarget(renderer.cameraColorTarget, 1.5f);
-            renderer.EnqueuePass(_grabColorBlit);
-            _grabColorTexturePass.SetTarget(_grabColorBlit.Recevier);
-            //_grabColorTexturePass.SetTarget(renderer.cameraColorTarget);
+            //_grabColorBlit.ConfigureInput(ScriptableRenderPassInput.Color);
+            //_grabColorBlit.SetTarget(renderer.cameraColorTarget, 1.5f);
+            //renderer.EnqueuePass(_grabColorBlit);
+            //_grabColorTexturePass.SetTarget(_grabColorBlit.Recevier);
+            _grabColorTexturePass.SetTarget(renderer.cameraColorTarget);
             renderer.EnqueuePass(_grabColorTexturePass);
             renderer.EnqueuePass(_useColorTexturePass);
         }

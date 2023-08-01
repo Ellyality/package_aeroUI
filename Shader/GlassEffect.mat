@@ -8,7 +8,7 @@ Material:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_Name: GlassEffect
-  m_Shader: {fileID: 4800000, guid: 4b71ad09e98e0e346872e0fd85f70574, type: 3}
+  m_Shader: {fileID: 4800000, guid: de8385fe03cb4d44ba541309cec111ac, type: 3}
   m_ValidKeywords: []
   m_InvalidKeywords:
   - SIZE_MEDIUM
