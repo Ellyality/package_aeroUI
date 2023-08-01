@@ -56,7 +56,7 @@ Shader "ColorBlit"
             {
                 UNITY_SETUP_STEREO_EYE_INDEX_POST_VERTEX(input);
                 float4 color = SAMPLE_TEXTURE2D_X(_CameraOpaqueTexture, sampler_CameraOpaqueTexture, input.uv);
-                return color * float4(0, _Intensity, _Intensity, 1);
+                return color;
             }
             ENDHLSL
         }

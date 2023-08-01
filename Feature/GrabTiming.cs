@@ -1,4 +1,5 @@
 using System;
+using System.Runtime.Remoting.Messaging;
 using UnityEngine.Rendering.Universal;
 
 namespace URPGrabPass.Runtime
@@ -6,7 +7,8 @@ namespace URPGrabPass.Runtime
     public enum GrabTiming
     {
         AfterOpaques,
-        AfterTransparents
+        AfterTransparents,
+        Before
     }
 
     public static class GrabTimingExtensions
@@ -19,9 +21,11 @@ namespace URPGrabPass.Runtime
                     return RenderPassEvent.AfterRenderingSkybox;
                 case GrabTiming.AfterTransparents:
                     return RenderPassEvent.AfterRenderingTransparents;
+                case GrabTiming.Before:
+                    return RenderPassEvent.BeforeRendering;
                 default:
                     throw new ArgumentOutOfRangeException(nameof(grabTiming), grabTiming, null);
-            }
+            };
         }
     }
 }

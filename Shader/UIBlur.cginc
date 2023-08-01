@@ -7,7 +7,7 @@
 #include "GaussianBlur.cginc"
 
 #ifndef ITER
-	#define ITER 8
+	#define ITER 6
 #endif
 
 // Pixel size.
@@ -58,7 +58,7 @@ float4 linear_blur(sampler2D sp, float4 uv, float2 dir) {
 // The blur is made centered, so the direction is always absolute.
 // sp - Texture sampler.
 // uv - Texture coordinates.
-float4 gaussian_blur(sampler2D sp, float4 uv, float4 tuv) {
+float4 glinear_blur(sampler2D sp, float4 uv) {
 	int samples = floor(SIZE);
 	int iter = ITER;
 	int leng = 0;
@@ -83,15 +83,9 @@ float4 gaussian_blur(sampler2D sp, float4 uv, float4 tuv) {
 				uvOffset.w
 			));
 			color += tex2Dproj(sp, uvOffset);
-			//uvOffset = UNITY_PROJ_COORD(uv);
-			//uvOffset.xy += (float2(x, y) * tuv.xy);
-			//weight = gauss(x, y, 0.8);
-			//color += tex2Dproj(sp, uvOffset) * weight;
-			//sum += weight;
 			leng+=1;
 		}
 	}
-	//color *= (1.0 / sum);
 	return color / leng;
 }
 
@@ -103,14 +97,12 @@ struct VS_Quad_Appdata
 	float2 uv : TEXCOORD;
 	UNITY_VERTEX_INPUT_INSTANCE_ID
 };
-
 struct VS_QuadProj_Appdata
 {
 	float4 v : POSITION;
 	float2 uv : TEXCOORD;
 	UNITY_VERTEX_INPUT_INSTANCE_ID
 };
-
 struct VS_QuadProjColor_Appdata
 {
 	float4 v : POSITION;
@@ -118,7 +110,6 @@ struct VS_QuadProjColor_Appdata
 	float4 img_color : COLOR;
 	UNITY_VERTEX_INPUT_INSTANCE_ID
 };
-
 struct PS_Quad_Appdata{
 	float4 p : SV_POSITION;
     UNITY_VERTEX_OUTPUT_STEREO
@@ -130,7 +121,6 @@ struct PS_QuadProj_Appdata{
 	float4 uv2 : TEXCOORD1;
     UNITY_VERTEX_OUTPUT_STEREO
 };
-
 struct PS_QuadProjColor_Appdata{
 	float4 p : SV_POSITION;
 	float2 uv1 : TEXCOORD0;
@@ -147,7 +137,6 @@ PS_Quad_Appdata VS_Quad(VS_Quad_Appdata v) {
 	o.p = UnityObjectToClipPos(v.v);
 	return o;
 }
-
 PS_QuadProj_Appdata VS_QuadProj(VS_QuadProj_Appdata v) {
 	PS_QuadProj_Appdata o;
 	UNITY_SETUP_INSTANCE_ID(v);
@@ -158,7 +147,6 @@ PS_QuadProj_Appdata VS_QuadProj(VS_QuadProj_Appdata v) {
 	o.uv2 = ComputeGrabScreenPos(o.p);
 	return o;
 }
-
 PS_QuadProjColor_Appdata VS_QuadProjColor(VS_QuadProjColor_Appdata v) {
 	PS_QuadProjColor_Appdata o;
 	UNITY_SETUP_INSTANCE_ID(v);
@@ -194,9 +182,24 @@ float4 blur_y(float2 img_uv, float4 grab_uv, float4 img_color, sampler2D grab_te
 
 	return color;
 }
+float4 blur_a(float2 img_uv, float4 grab_uv, float4 img_color, sampler2D main_tex, sampler2D grab_tex, float4 grab_texelSize) {
+	//float4 blur = glinear_blur(grab_tex, grab_uv);
+	pixel_info pi;
+	pi.tex = grab_tex;
+	pi.uv = grab_uv.xy / grab_uv.w;
+	pi.texelSize = grab_texelSize;
+	float4 blur = GaussianBlurOnePass(pi, _Size, float2(_Size, _Size));
+	blur.a = 1.0;
+
+	float4 color = tex2D(main_tex, img_uv) * img_color * _Opacity;
+	color *= blur;
+	color = lerp(blur, color, color.a);
+
+	return color;
+}
 
 float4 gblur_x(float2 img_uv, float4 grab_uv, sampler2D grab_tex, float4 grab_texel) {
-	float4 blur = gaussian_blur(grab_tex, grab_uv, grab_texel);
+	float4 blur = glinear_blur(grab_tex, grab_uv);
 	blur.a = 1.0;
 
 	float4 color = tex2D(_MainTex, img_uv);
@@ -204,7 +207,7 @@ float4 gblur_x(float2 img_uv, float4 grab_uv, sampler2D grab_tex, float4 grab_te
     return blur * color.a;
 }
 float4 gblur_y(float2 img_uv, float4 grab_uv, float4 img_color, sampler2D grab_tex, float4 grab_texel) {
-	float4 blur = gaussian_blur(grab_tex, grab_uv, grab_texel);
+	float4 blur = glinear_blur(grab_tex, grab_uv);
 	blur.a = 1.0;
 
 	float4 color = tex2D(_MainTex, img_uv) * img_color;

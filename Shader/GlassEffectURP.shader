@@ -23,19 +23,8 @@ SubShader {
 sampler2D _GrabbedTexture;
 float4 _GrabbedTexture_TexelSize;
 
-float4 PS_BlurA(
-	float4 p : SV_POSITION,
-	float2 uv1 : TEXCOORD0,
-	float4 uv2 : TEXCOORD1,
-	float4 img_color : COLOR
-) : SV_TARGET {
-
-#if defined(UNIVERSAL_PIPELINE_CORE_INCLUDED)
-	return tex2D(_MainTex, uv1);
-#else
-	return blur_y(uv1, uv2, blur_x(uv1, uv2, _MainTex), _GrabbedTexture);
-#endif
-	
+float4 PS_BlurA(PS_QuadProjColor_Appdata v) : SV_TARGET {
+	return blur_a(v.uv1, v.uv2, v.img_color, _MainTex, _GrabbedTexture, _GrabbedTexture_TexelSize);
 }
 
 	ENDCG
@@ -47,7 +36,8 @@ float4 PS_BlurA(
             "LightMode" = "UseColorTexture"
         }
 		CGPROGRAM
-		#pragma vertex VS_QuadProj
+		#pragma target 3.0
+		#pragma vertex VS_QuadProjColor
 		#pragma fragment PS_BlurA
 		ENDCG
 	}
