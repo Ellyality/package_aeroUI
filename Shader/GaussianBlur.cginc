@@ -7,7 +7,7 @@
 #elif LITTLE_KERNEL
 	#define KERNEL_SIZE 1
 #else
-	#define KERNEL_SIZE 15
+	#define KERNEL_SIZE 9
 #endif
 
 float gauss(float x, float sigma)
@@ -47,15 +47,15 @@ float4 GaussianBlur(pixel_info pinfo, float sigma, float2 dir)
 	return o;
 }
 
-float4 GaussianBlurOnePass(pixel_info pinfo, float sigma, float2 dir)
+float4 GaussianBlurOnePass(pixel_info pinfo, float sigma, float2 dir, int k_size)
 {
 	float4 o = 0;
 	float sum = 0;
 	float2 uvOffset;
 	float weight;
 	
-	for (int x = -KERNEL_SIZE / 2; x <= KERNEL_SIZE / 2; ++x)
-		for (int y = -KERNEL_SIZE / 2; y <= KERNEL_SIZE / 2; ++y)
+	for (int x = -k_size / 2; x <= k_size / 2; ++x)
+		for (int y = -k_size / 2; y <= k_size / 2; ++y)
 		{
 			uvOffset = pinfo.uv;
 			uvOffset.x += x * pinfo.texelSize.x;
