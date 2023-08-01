@@ -3,7 +3,7 @@ Properties {
 	[HideInInspector] 
 	_MainTex("", 2D) = "" {}
 	_Opacity("Opacity", Range(0.0, 1.0)) = 0.5
-	_Size("Size", Range(1.0, 16.0)) = 4.0
+	_Size("Size", Range(1.0, 30.0)) = 4.0
 }
 SubShader {
 	Tags {

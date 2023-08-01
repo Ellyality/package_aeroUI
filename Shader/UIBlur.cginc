@@ -188,7 +188,7 @@ float4 blur_a(float2 img_uv, float4 grab_uv, float4 img_color, sampler2D main_te
 	pi.tex = grab_tex;
 	pi.uv = grab_uv.xy / grab_uv.w;
 	pi.texelSize = grab_texelSize;
-	float4 blur = GaussianBlurOnePass(pi, _Size, float2(_Size, _Size));
+	float4 blur = GaussianBlurOnePass(pi, _Size, float2(_Size, _Size), int(_Size));
 	blur.a = 1.0;
 
 	float4 color = tex2D(main_tex, img_uv) * img_color * _Opacity;
