@@ -16,11 +16,9 @@ namespace URPGrabPass.Runtime
 
         private RenderTargetIdentifier m_CameraColorTarget;
         private ScriptableRenderer _renderer;
-        Material m_Material;
 
-        public GrabColorTexturePass(GrabTiming timing, string grabbedTextureName, Material material)
+        public GrabColorTexturePass(GrabTiming timing, string grabbedTextureName)
         {
-            m_Material = material;
             renderPassEvent = timing.ToRenderPassEvent();
             _grabbedTextureName = grabbedTextureName;
             _grabbedTextureHandle = RTHandles.Alloc(_grabbedTextureName, _grabbedTextureName);

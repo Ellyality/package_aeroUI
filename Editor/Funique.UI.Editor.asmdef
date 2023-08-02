@@ -1,0 +1,18 @@
+{
+    "name": "Funique.UI.Editor",
+    "rootNamespace": "",
+    "references": [
+        "GUID:95b681400c690d743b90532f927456c2"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
