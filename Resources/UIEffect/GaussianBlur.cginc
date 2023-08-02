@@ -1,13 +1,13 @@
 #define PI 3.14159265
 
-#if defined(MEDIUM_KERNEL)
-	#define KERNEL_SIZE 5
-#elif BIG_KERNEL
-	#define KERNEL_SIZE 3
-#elif LITTLE_KERNEL
-	#define KERNEL_SIZE 1
+#if defined(BIG_KERNEL)
+	#define KERNEL_SIZE 30
+#elif defined(MEDIUM_KERNEL)
+	#define KERNEL_SIZE 20
+#elif defined(LITTLE_KERNEL)
+	#define KERNEL_SIZE 10
 #else
-	#define KERNEL_SIZE 9
+	#define KERNEL_SIZE 1
 #endif
 
 float gauss(float x, float sigma)
@@ -23,8 +23,8 @@ float gauss(float x, float y, float sigma)
 struct pixel_info
 {
 	sampler2D tex;
-	float2 uv;
-	float4 texelSize;
+	half2 uv;
+	half4 texelSize;
 };
 
 float4 GaussianBlur(pixel_info pinfo, float sigma, float2 dir)
@@ -64,6 +64,30 @@ float4 GaussianBlurOnePass(pixel_info pinfo, float sigma, float2 dir, int k_size
 			o += tex2D(pinfo.tex, uvOffset) * weight;
 			sum += weight;
 		}
+	o *= (1.0f / sum);
+	return o;
+}
+float4 GaussianBlurOnePassFast(pixel_info pinfo, float sigma, float2 dir)
+{
+	float4 o = 0;
+	float sum = 0;
+	float2 uvOffset;
+	float weight;
+	
+	[unroll]
+	for (int x = -KERNEL_SIZE / 2; x <= KERNEL_SIZE / 2; ++x)
+	{
+		[unroll]
+		for (int y = -KERNEL_SIZE / 2; y <= KERNEL_SIZE / 2; ++y)
+		{
+			uvOffset = pinfo.uv;
+			uvOffset.x += x * pinfo.texelSize.x;
+			uvOffset.y += y * pinfo.texelSize.y;
+			weight = gauss(x, y, sigma);
+			o += tex2D(pinfo.tex, uvOffset) * weight;
+			sum += weight;
+		}
+	}
 	o *= (1.0f / sum);
 	return o;
 }
