@@ -8,11 +8,12 @@ Material:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_Name: GlassEffect
-  m_Shader: {fileID: 4800000, guid: de8385fe03cb4d44ba541309cec111ac, type: 3}
+  m_Shader: {fileID: 4800000, guid: 764f24fc4ce560b45a05a7efb91eb2ed, type: 3}
   m_ValidKeywords: []
   m_InvalidKeywords:
   - SIZE_MEDIUM
   - SIZE_MEDIUM_KERNEL
+  - _LEVEL_MEDIUM_KERNEL
   m_LightmapFlags: 4
   m_EnableInstancingVariants: 0
   m_DoubleSidedGI: 0
@@ -100,6 +101,7 @@ Material:
     - _GlossinessSource: 0
     - _GlossyReflections: 0
     - _Iter: 4
+    - _Level: 2
     - _Metallic: 0
     - _OcclusionStrength: 1
     - _Opacity: 1

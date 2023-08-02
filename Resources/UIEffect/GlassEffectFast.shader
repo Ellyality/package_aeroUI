@@ -1,9 +1,9 @@
-Shader "Funique/Build-in/UI Blur Effet" {
+Shader "Funique/Build-in/UI Blur Effet Fast" {
 Properties {
 	[HideInInspector]
 	_MainTex("", 2D) = "" {}
 	_Opacity("Opacity", Range(0.0, 1.0)) = 0.5
-	_Size("Size", Range(1.0, 16.0)) = 4.0
+	[KeywordEnum(NONE, LITTLE_KERNEL, MEDIUM_KERNEL, BIG_KERNEL)] _Level ("Level", Float) = 0
 }
 SubShader {
 	Tags {
@@ -18,7 +18,7 @@ SubShader {
 	Blend SrcAlpha OneMinusSrcAlpha
 
 CGINCLUDE
-	#define SIZE _Size
+	#pragma multi_compile NONE LITTLE_KERNEL MEDIUM_KERNEL BIG_KERNEL
 	#include "UIBlur.cginc"
 	sampler2D _GrabTexture;
 	fixed4 _GrabTexture_TexelSize;
@@ -31,7 +31,7 @@ CGINCLUDE
 	fixed4 PS_BlurY(PS_QuadProjColor_Appdata i) : SV_TARGET {
 		UNITY_SETUP_STEREO_EYE_INDEX_POST_VERTEX(i);
 		//return tex2D(_GrabTexture, i.uv2);
-		return blur_a(i.uv1, i.uv2, i.img_color, _MainTex, _GrabTexture, _GrabTexture_TexelSize);
+		return blur_f(i.uv1, i.uv2, i.img_color, _MainTex, _GrabTexture, _GrabTexture_TexelSize);
 	}
 	ENDCG
 
