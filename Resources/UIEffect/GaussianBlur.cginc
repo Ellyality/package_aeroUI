@@ -115,10 +115,10 @@ float4 GaussianBlurLinearSampling(pixel_info pinfo, float sigma, float2 dir)
 float4 KawaseBlur(pixel_info pinfo, int pixelOffset)
 {
 	float4 o = 0;
-	o += tex2D(pinfo.tex, pinfo.uv + (float2(pixelOffset + 0.5,pixelOffset + 0.5) * pinfo.texelSize)) * 0.25;
-	o += tex2D(pinfo.tex, pinfo.uv + (float2(-pixelOffset - 0.5,pixelOffset + 0.5) * pinfo.texelSize))* 0.25;
-	o += tex2D(pinfo.tex, pinfo.uv + (float2(-pixelOffset - 0.5,-pixelOffset - 0.5) * pinfo.texelSize)) * 0.25;
-	o += tex2D(pinfo.tex, pinfo.uv + (float2(pixelOffset + 0.5,-pixelOffset - 0.5) * pinfo.texelSize)) * 0.25;
+	o += tex2D(pinfo.tex, pinfo.uv + (float2(pixelOffset + 0.5,pixelOffset + 0.5) * pinfo.texelSize.xy)) * 0.25;
+	o += tex2D(pinfo.tex, pinfo.uv + (float2(-pixelOffset - 0.5,pixelOffset + 0.5) * pinfo.texelSize.xy))* 0.25;
+	o += tex2D(pinfo.tex, pinfo.uv + (float2(-pixelOffset - 0.5,-pixelOffset - 0.5) * pinfo.texelSize.xy)) * 0.25;
+	o += tex2D(pinfo.tex, pinfo.uv + (float2(pixelOffset + 0.5,-pixelOffset - 0.5) * pinfo.texelSize.xy)) * 0.25;
 	return o;
 }
 

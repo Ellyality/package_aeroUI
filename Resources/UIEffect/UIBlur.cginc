@@ -101,7 +101,7 @@ fixed4 blur_f(half2 img_uv, half4 grab_uv, half4 img_color, sampler2D main_tex, 
 	pi.tex = grab_tex;
 	pi.uv = grab_uv.xy / grab_uv.w;
 	pi.texelSize = grab_texelSize;
-	fixed4 blur = GaussianBlurOnePassFast(pi, _Size, half2(_Size, _Size));
+	fixed4 blur = GaussianBlurOnePassFast(pi, 20.0, half2(20.0, 20.0));
 	blur.a = 1.0;
 
 	fixed4 main_pixel = tex2D(main_tex, img_uv) * img_color;
