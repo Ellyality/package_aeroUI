@@ -122,4 +122,39 @@ float4 KawaseBlur(pixel_info pinfo, int pixelOffset)
 	return o;
 }
 
+float4 linear_blur(sampler2D sp, float4 uv, float2 dir) {
+	static const int samples = 9;
 
+	float4 color = 0.0;
+
+	// Move coordinates in opposite direction to center the sampling.
+	uv = UNITY_PROJ_COORD(float4(
+		uv.x - dir.x * samples * 0.5,
+		uv.y - dir.y * samples * 0.5,
+		uv.z,
+		uv.w
+	));
+
+	[unroll]
+	for (int i = 0; i < samples; ++i) {
+		uv = UNITY_PROJ_COORD(float4(
+			uv.x + dir.x,
+			uv.y + dir.y,
+			uv.z,
+			uv.w
+		));
+		color += tex2Dproj(sp, uv);
+	}
+
+	return color / samples;
+}
+fixed4 kawase_blur(sampler2D sp, float2 uv, float2 res, float si){
+	fixed4 col = fixed4(0.0, 0.0, 0.0, 0.0);
+	col.rgb = tex2D( sp, uv ).rgb;
+    col.rgb += tex2D( sp, uv + float2( si, si ) * res ).rgb;
+    col.rgb += tex2D( sp, uv + float2( si, -si ) * res ).rgb;
+    col.rgb += tex2D( sp, uv + float2( -si, si ) * res ).rgb;
+    col.rgb += tex2D( sp, uv + float2( -si, -si ) * res ).rgb;
+    col.rgb /= 5.0f;
+	return col;
+}

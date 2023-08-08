@@ -21,6 +21,7 @@ uniform fixed4 _MainTex_TexelSize;
 fixed _Opacity;
 int _Size;
 
+
 // Vertex shaders.
 struct VS_Quad_Appdata
 {
@@ -92,6 +93,38 @@ PS_QuadProjColor_Appdata VS_QuadProjColor(VS_QuadProjColor_Appdata v) {
 
 // Pixel shader functions (for changing the grab pass texture).
 
+float4 sblur_x(float2 img_uv, float4 grab_uv, sampler2D grab_tex) {
+	float2 dir = float2(ps.x * _Size, 0.0);
+    
+	float4 blur = linear_blur(grab_tex, grab_uv, dir);
+	blur.a = 1.0;
+
+	float4 color = tex2D(_MainTex, img_uv);
+
+    return blur * color.a;
+}
+float4 sblur_y(float2 img_uv, float4 grab_uv, float4 img_color, sampler2D grab_tex) {
+	float2 dir = float2(0.0, ps.y * _Size);
+    
+	float4 blur = linear_blur(grab_tex, grab_uv, dir);
+	blur.a = 1.0;
+
+	float4 color = tex2D(_MainTex, img_uv) * img_color;
+	color = lerp(blur * color.a, color, _Opacity);
+
+	return color;
+}
+float4 sblur_a(float2 img_uv, float4 grab_uv, float4 img_color, sampler2D grab_tex) {
+	float2 dir = float2(ps.x * _Size, ps.y * _Size);
+    
+	float4 blur = linear_blur(grab_tex, grab_uv, dir);
+	blur.a = 1.0;
+
+	float4 color = tex2D(_MainTex, img_uv) * img_color;
+	color = lerp(blur * color.a, color, _Opacity);
+
+	return color;
+}
 fixed4 blur_x(half2 img_uv) {
 	fixed4 color = tex2D(_MainTex, img_uv);
     return color;
