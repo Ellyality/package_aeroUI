@@ -1,0 +1,70 @@
+// Each #kernel tells which function to compile; you can have many kernels
+#pragma kernel CSMain
+#define PI 3.14159265
+
+uint inWidth;
+uint inHeight;
+uint inSize;
+half inOpacity;
+float4 inTint;
+Texture2D<float4> inBackTex;
+Texture2D<float4> inMainTex;
+RWTexture2D<float4> outTex;
+
+
+struct pixel_info
+{
+	Texture2D<float4> tex;
+	half2 uv;
+	half4 texelSize;
+};
+
+float gauss(float x, float sigma)
+{
+	return  1.0f / (2.0f * PI * sigma * sigma) * exp(-(x * x) / (2.0f * sigma * sigma));
+}
+
+float gauss(float x, float y, float sigma)
+{
+    return  1.0f / (2.0f * PI * sigma * sigma) * exp(-(x * x + y * y) / (2.0f * sigma * sigma));
+}
+
+float4 GaussianBlurOnePass(pixel_info pinfo, float sigma, float2 dir, int k_size)
+{
+	float4 o = 0;
+	float sum = 0;
+	float2 uvOffset;
+	float weight;
+	
+	for (int x = -k_size / 2; x <= k_size / 2; ++x)
+		for (int y = -k_size / 2; y <= k_size / 2; ++y)
+		{
+			uvOffset = pinfo.uv;
+			uvOffset.x += x * pinfo.texelSize.x;
+			uvOffset.y += y * pinfo.texelSize.y;
+			weight = gauss(x, y, sigma);
+			o += pinfo.tex[uvOffset] * weight;
+			sum += weight;
+		}
+	o *= (1.0f / sum);
+	return o;
+}
+
+[numthreads(8,8,1)]
+void CSMain (uint3 id : SV_DispatchThreadID)
+{
+    pixel_info pi;
+	pi.tex = inBackTex;
+	pi.uv = half2(half(id.x) / half(inWidth), half(id.y) / half(inHeight));
+	pi.texelSize = half4(1.0 / half(inWidth), 1.0 / half(inHeight), inWidth, inHeight);
+	half4 blur = GaussianBlurOnePass(pi, 20.0, half2(20.0, 20.0), inSize);
+	blur.a = 1.0;
+
+    half4 main_pixel = inMainTex[pi.uv] * inTint;
+	half4 color = inMainTex[pi.uv] * inOpacity;
+	color *= blur;
+	color = lerp(blur, color, color.a);
+	color.a = 1.0;
+
+	outTex[id.xy] = color;
+}
